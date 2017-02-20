@@ -1,0 +1,124 @@
+﻿<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="$(SolutionDir)packages\SqlMeta.1.0.5847.37675\lib\SqlMeta.dll"#>
+<#@ assembly name="$(SolutionDir)packages\Dapper.1.42\lib\net45\Dapper.dll"#>
+<#@ assembly name="System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" #>
+<#@ import namespace="SqlMeta.Data.Repositories" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@include file="..\..\X - CodeGen\Manager.tt"#>
+<# var manager = Manager.Create(Host, GenerationEnvironment); #>
+<#@ output extension="/" #>
+<#var extention = "cs";#>
+
+<#
+    var dataRepo = new MetaRepository(manager.ConnectionString);
+    var tables = dataRepo.GetTableInfo().Where(t => !t.TableName.Contains("sysdiagram")).ToList();
+    var nameSpace = "LivingSpec.WebApi.Controllers";
+
+    foreach (var table in tables)
+    {
+        var createModelName = $"{table.TableName}CreateModel";
+        var domainTypeInterfaceName = $"I{table.TableName}";
+        manager.StartNewFile($"{createModelName}.{extention}");
+#>
+namespace LivingSpec.WebApi.Models
+{
+    using System;
+    using System.Collections.Generic;
+    using RootContracts.DataContracts.Domain;
+    using RootContracts.DataContracts.Validation;
+    using Validation;
+
+	public partial class <#=createModelName#> : <#=domainTypeInterfaceName#>
+	{	
+	<#foreach (SqlMeta.Data.Types.SqlColumnInfo column in table.Columns)
+	{#>
+	public <#=Manager.GetCSharpTypeFromSqlType(sqlType:column.DataType,isNullable:column.IsNullable)#> <#=column.ColumnName#> { get; set; }
+	<#}#>	
+	}
+}
+<#
+
+var updateModelName = $"{table.TableName}UpdateModel";
+manager.StartNewFile($"{updateModelName}.{extention}");
+#>
+namespace LivingSpec.WebApi.Models
+{
+    using System;
+    using System.Collections.Generic;
+    using RootContracts.DataContracts.Domain;
+    using RootContracts.DataContracts.Validation;
+    using Validation;
+
+	public partial class <#=updateModelName#> : <#=domainTypeInterfaceName#>
+	{
+	<#foreach (SqlMeta.Data.Types.SqlColumnInfo column in table.Columns)
+	{#>
+	public <#=Manager.GetCSharpTypeFromSqlType(sqlType:column.DataType,isNullable:column.IsNullable)#> <#=column.ColumnName#> { get; set; }
+	<#}#>
+	}
+}
+<#
+
+
+var findModelName = $"{table.TableName}FindModel";
+manager.StartNewFile($"{findModelName}.{extention}");
+#>
+namespace LivingSpec.WebApi.Models
+{
+    using System;
+    using System.Collections.Generic;
+    using RootContracts.DataContracts.Domain;
+    using RootContracts.DataContracts.Validation;
+    using Validation;
+
+	public partial class <#=findModelName#>
+	{
+	<#foreach (SqlMeta.Data.Types.SqlColumnInfo column in table.Columns)
+	{#>
+	public <#=Manager.GetCSharpTypeFromSqlType(sqlType:column.DataType,isNullable:true)#> <#=column.ColumnName#> { get; set; }
+	<#}#>
+}
+}
+<#
+var searchProc = dataRepo.GetStoredProcedureInfo(schema: "dbo", procName: $"{table.TableName}Search").SingleOrDefault();
+if (!searchProc.Parameters.Any())
+{
+    continue;
+}
+var searchModelName = $"{table.TableName}SearchModel";
+manager.StartNewFile($"{searchModelName}.{extention}");
+#>
+
+namespace LivingSpec.WebApi.Models
+{
+    using System;
+    using System.Collections.Generic;
+
+	public partial class <#=searchModelName#>
+	{
+		<#=BuildSearchProperties(searchProc.Parameters)#>
+	}
+}
+
+
+<#}#>
+
+<# manager.EndBlock(); #>
+<# manager.Process(true); #>
+
+<#+
+    internal string BuildSearchProperties(List<SqlParameterInfo> parameters)
+    {
+        var sb = new StringBuilder();
+
+        foreach (var p in parameters)
+        {
+            sb.Append($"public {Manager.GetCSharpTypeFromSqlType(sqlType:p.ParameterDataType,isNullable:true)} {Manager.StripAtSign(p.Name)} {{get;set;}}");
+            sb.Append(Manager.NewLine());
+        }
+        return sb.ToString();
+    }
+#>

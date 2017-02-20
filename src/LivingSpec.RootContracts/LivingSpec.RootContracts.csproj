@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8B35A9ED-8821-4F48-86C9-AD991EFFC952}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>LivingSpec.RootContracts</RootNamespace>
+    <AssemblyName>LivingSpec.RootContracts</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BehaviorContracts\Configuration\IConfig.cs" />
+    <Compile Include="BehaviorContracts\DataAccess\IDapperWrapper.cs" />
+    <Compile Include="BehaviorContracts\DataAccess\IDatabaseProvider.cs" />
+    <Compile Include="BehaviorContracts\DataAccess\ILivingSpecContext.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ILivingSpecContext.tt</DependentUpon>
+    </Compile>
+    <Compile Include="BehaviorContracts\Validation\IModelStateParser.cs" />
+    <Compile Include="DataContracts\Domain\IApiResponse.cs" />
+    <Compile Include="DataContracts\Domain\IApp.cs">
+      <DependentUpon>DomainInterfaces.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DataContracts\Domain\IAppDependency.cs">
+      <DependentUpon>DomainInterfaces.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DataContracts\Domain\IAppDomain.cs">
+      <DependentUpon>DomainInterfaces.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DataContracts\Domain\IAppFeature.cs">
+      <DependentUpon>DomainInterfaces.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DataContracts\Domain\IAppResourceLink.cs">
+      <DependentUpon>DomainInterfaces.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DataContracts\Domain\IAppTest.cs">
+      <DependentUpon>DomainInterfaces.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DataContracts\Domain\IDomainTerm.cs">
+      <DependentUpon>DomainInterfaces.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DataContracts\Domain\IFeature.cs">
+      <DependentUpon>DomainInterfaces.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DataContracts\Validation\IValidationFailure.cs" />
+    <Compile Include="DataContracts\Validation\IValidationResult.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="BehaviorContracts\DataAccess\ILivingSpecContext.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ILivingSpecContext.cs</LastGenOutput>
+    </Content>
+    <Content Include="DataContracts\Domain\DomainInterfaces.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

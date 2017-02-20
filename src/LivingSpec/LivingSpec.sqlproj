@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>LivingSpec</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{3258e2ca-0dfd-47da-a9bb-211dfc507b6c}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql130DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootPath>
+    </RootPath>
+    <RootNamespace>LivingSpec</RootNamespace>
+    <AssemblyName>LivingSpec</AssemblyName>
+    <ModelCollation>1033,CI</ModelCollation>
+    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
+    <DeployToDatabase>True</DeployToDatabase>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetLanguage>CS</TargetLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SqlServerVerification>False</SqlServerVerification>
+    <IncludeCompositeObjects>True</IncludeCompositeObjects>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+    <DefaultCollation>SQL_Latin1_General_CP1_CI_AS</DefaultCollation>
+    <DefaultFilegroup>PRIMARY</DefaultFilegroup>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <!-- Default to the v11.0 targets path if the targets file for the current VS version is not found -->
+    <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
+    <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Properties" />
+    <Folder Include="dbo\" />
+    <Folder Include="dbo\Tables\" />
+    <Folder Include="SchemaCompares" />
+    <Folder Include="dbo\Stored Procedures\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="dbo\Tables\AppFeature.sql" />
+    <Build Include="dbo\Tables\Feature.sql" />
+    <Build Include="dbo\Tables\AppResourceLink.sql" />
+    <Build Include="dbo\Tables\AppDependency.sql" />
+    <Build Include="dbo\Tables\AppTest.sql" />
+    <Build Include="dbo\Tables\AppDomain.sql" />
+    <Build Include="dbo\Tables\App.sql" />
+    <Build Include="dbo\Tables\DomainTerm.sql" />
+    <Build Include="dbo\Stored Procedures\FeatureUpdate.sql" />
+    <Build Include="dbo\Stored Procedures\FeatureSelect.sql" />
+    <Build Include="dbo\Stored Procedures\FeatureSearch.sql" />
+    <Build Include="dbo\Stored Procedures\FeatureInsert.sql" />
+    <Build Include="dbo\Stored Procedures\FeatureFind.sql" />
+    <Build Include="dbo\Stored Procedures\FeatureDelete.sql" />
+    <Build Include="dbo\Stored Procedures\DomainTermUpdate.sql" />
+    <Build Include="dbo\Stored Procedures\DomainTermSelect.sql" />
+    <Build Include="dbo\Stored Procedures\DomainTermSearch.sql" />
+    <Build Include="dbo\Stored Procedures\DomainTermInsert.sql" />
+    <Build Include="dbo\Stored Procedures\DomainTermFind.sql" />
+    <Build Include="dbo\Stored Procedures\DomainTermDelete.sql" />
+    <Build Include="dbo\Stored Procedures\AppUpdate.sql" />
+    <Build Include="dbo\Stored Procedures\AppTestUpdate.sql" />
+    <Build Include="dbo\Stored Procedures\AppTestSelect.sql" />
+    <Build Include="dbo\Stored Procedures\AppTestSearch.sql" />
+    <Build Include="dbo\Stored Procedures\AppTestInsert.sql" />
+    <Build Include="dbo\Stored Procedures\AppTestFind.sql" />
+    <Build Include="dbo\Stored Procedures\AppTestDelete.sql" />
+    <Build Include="dbo\Stored Procedures\AppSelect.sql" />
+    <Build Include="dbo\Stored Procedures\AppSearch.sql" />
+    <Build Include="dbo\Stored Procedures\AppResourceLinkUpdate.sql" />
+    <Build Include="dbo\Stored Procedures\AppResourceLinkSelect.sql" />
+    <Build Include="dbo\Stored Procedures\AppResourceLinkSearch.sql" />
+    <Build Include="dbo\Stored Procedures\AppResourceLinkInsert.sql" />
+    <Build Include="dbo\Stored Procedures\AppResourceLinkFind.sql" />
+    <Build Include="dbo\Stored Procedures\AppResourceLinkDelete.sql" />
+    <Build Include="dbo\Stored Procedures\AppInsert.sql" />
+    <Build Include="dbo\Stored Procedures\AppFind.sql" />
+    <Build Include="dbo\Stored Procedures\AppFeatureUpdate.sql" />
+    <Build Include="dbo\Stored Procedures\AppFeatureSelect.sql" />
+    <Build Include="dbo\Stored Procedures\AppFeatureSearch.sql" />
+    <Build Include="dbo\Stored Procedures\AppFeatureInsert.sql" />
+    <Build Include="dbo\Stored Procedures\AppFeatureFind.sql" />
+    <Build Include="dbo\Stored Procedures\AppFeatureDelete.sql" />
+    <Build Include="dbo\Stored Procedures\AppDomainUpdate.sql" />
+    <Build Include="dbo\Stored Procedures\AppDomainSelect.sql" />
+    <Build Include="dbo\Stored Procedures\AppDomainSearch.sql" />
+    <Build Include="dbo\Stored Procedures\AppDomainInsert.sql" />
+    <Build Include="dbo\Stored Procedures\AppDomainFind.sql" />
+    <Build Include="dbo\Stored Procedures\AppDomainDelete.sql" />
+    <Build Include="dbo\Stored Procedures\AppDependencyUpdate.sql" />
+    <Build Include="dbo\Stored Procedures\AppDependencySelect.sql" />
+    <Build Include="dbo\Stored Procedures\AppDependencySearch.sql" />
+    <Build Include="dbo\Stored Procedures\AppDependencyInsert.sql" />
+    <Build Include="dbo\Stored Procedures\AppDependencyFind.sql" />
+    <Build Include="dbo\Stored Procedures\AppDependencyDelete.sql" />
+    <Build Include="dbo\Stored Procedures\AppDelete.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SchemaCompares\HpcSandbox.scmp" />
+  </ItemGroup>
+</Project>

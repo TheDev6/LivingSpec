@@ -1,0 +1,165 @@
+﻿<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="$(SolutionDir)packages\SqlMeta.1.0.5847.37675\lib\SqlMeta.dll" 
+#><#@ assembly name="$(SolutionDir)packages\Dapper.1.42\lib\net45\Dapper.dll" 
+#>
+<#@ assembly name="System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" #>
+<#@ import namespace="SqlMeta.Data.Repositories" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@include file="..\..\X - CodeGen\Manager.tt"#>
+<# var manager = Manager.Create(Host, GenerationEnvironment); #>
+<#@ output extension="/" #>
+<#var extention = "cs";#>
+<#
+    var dataRepo = new MetaRepository(manager.ConnectionString);
+    var tables = dataRepo.GetTableInfo().Where(t => !t.TableName.Contains("sysdiagram")).ToList();
+    var nameSpace = "LivingSpec.WebApi.Controllers";
+
+    foreach (var table in tables)
+    {
+        var controllerName = $"{table.TableName}Controller";
+		manager.StartNewFile($"{controllerName}.{extention}");
+#>
+namespace <#=nameSpace#>
+{
+    using System;
+    using System.Net;
+    using System.Net.Http;
+	using System.Web.Http;
+    using System.Threading.Tasks;
+	using System.Collections.Generic;
+    using System.Web.Http.Description;
+    using Models;
+    using RootContracts.BehaviorContracts.DataAccess;
+    using RootContracts.DataContracts.Domain;
+    using Validation;
+
+	public partial class <#=controllerName#> : ApiController
+	{
+		private readonly ILivingSpecContext _livingSpecContext;
+
+		public <#=controllerName#>(ILivingSpecContext livingSpecContext)
+		{
+			this._livingSpecContext = livingSpecContext;
+		}
+
+		[HttpPost]
+		[Route("api/v1/<#=table.TableName#>")]
+		[ValidateModelState]
+		[ResponseType(typeof(IApiResponse<object>))]
+		public async Task<HttpResponseMessage> Post(<#=table.TableName#>CreateModel model)
+		{
+			var result = new ApiResponse<object>();
+			await this._livingSpecContext.<#=table.TableName#>InsertAsync(model).ConfigureAwait(false);
+			return Request.CreateResponse(statusCode: HttpStatusCode.Created, value: result);
+		}
+
+		[HttpPut]
+        [Route("api/v1/ArtifactWorkItem")]
+        [ResponseType(typeof(IApiResponse<object>))]
+        [ValidateModelState]
+        public async Task<HttpResponseMessage> Update(<#=table.TableName#>UpdateModel model)
+        {
+            var result = new ApiResponse<object>();
+            await this._livingSpecContext.<#=table.TableName#>UpdateAsync(model).ConfigureAwait(false);
+            return Request.CreateResponse(statusCode: HttpStatusCode.OK, value: result);
+        }
+
+		[HttpGet]
+		[Route("api/v1/<#=table.TableName#>/Select")]
+		[ResponseType(typeof(IApiResponse<I<#=table.TableName#>>))]
+		public async Task<HttpResponseMessage> Select(Guid <#=Manager.FirstToLower(table.TableName)#>Guid)
+		{
+			var result = new ApiResponse<I<#=table.TableName#>>();
+			result.Payload = await this._livingSpecContext.<#=table.TableName#>SelectAsync(<#=Manager.FirstToLower(table.TableName)#>Guid).ConfigureAwait(false);
+			return Request.CreateResponse(statusCode: HttpStatusCode.OK, value: result);
+		}
+
+		[HttpGet]
+		[Route("api/v1/<#=table.TableName#>/Find")]
+		[ResponseType(typeof(IApiResponse<List<I<#=table.TableName#>>>))]
+		public async Task<HttpResponseMessage> Find(<#=table.TableName#>FindModel model)
+		{
+			var result = new ApiResponse<List<I<#=table.TableName#>>>();
+			result.Payload = await this._livingSpecContext.<#=table.TableName#>FindAsync(<#=RenderFindModelInputParams(table)#>).ConfigureAwait(false);
+			return Request.CreateResponse(statusCode: HttpStatusCode.OK, value: result);
+		}
+<#
+var searchProc = dataRepo.GetStoredProcedureInfo(schema: "dbo", procName: $"{table.TableName}Search").SingleOrDefault();
+if (searchProc.Parameters.Any())
+{#>
+
+		[HttpGet]
+		[Route("api/v1/<#=table.TableName#>/Search")]
+		[ResponseType(typeof(IApiResponse<List<I<#=table.TableName#>>>))]
+		public async Task<HttpResponseMessage> Search(<#=table.TableName#>SearchModel model)
+		{
+			var result = new ApiResponse<List<I<#=table.TableName#>>>();
+			result.Payload = await this._livingSpecContext.<#=table.TableName#>SearchAsync(
+			<#=this.RenderSearchModelInputParams(searchProc)#>).ConfigureAwait(false);
+			return Request.CreateResponse(statusCode: HttpStatusCode.OK, value: result);
+		}
+
+<#}#>
+
+		[HttpDelete]
+		[Route("api/v1/<#=table.TableName#>")]
+		[ResponseType(typeof(IApiResponse<object>))]
+		public async Task<HttpResponseMessage> Delete(Guid <#=Manager.FirstToLower(table.TableName)#>Guid)
+		{
+			var result = new ApiResponse<object>();
+			await this._livingSpecContext.<#=table.TableName#>DeleteAsync(<#=Manager.FirstToLower(table.TableName)#>Guid).ConfigureAwait(false);
+			return Request.CreateResponse(statusCode: HttpStatusCode.OK, value: result);
+		}
+	}
+}
+<#
+}
+#>
+<# manager.EndBlock(); #>
+<# manager.Process(true); #>
+
+<#+
+
+    public string RenderFindModelInputParams(SqlTableInfo table)
+    {
+		var sb = new StringBuilder();
+        var comma = ",";
+        var iter = 0;
+        foreach (var p in table.Columns)
+        {
+            iter++;
+            if (table.Columns.Count == iter)
+            {
+                comma = "";
+            }   
+            
+			var updatedParamName = Manager.StripAtSign(p.ColumnName);
+            sb.Append($"{Manager.FirstToLower(updatedParamName)} : model?.{updatedParamName}{comma}");
+            sb.Append(Manager.NewLine());
+        }
+        return sb.ToString();
+    }
+
+    public string RenderSearchModelInputParams(SqlStoredProcedureInfo sproc)
+    {
+		var sb = new StringBuilder();
+        var comma = ",";
+        var iter = 0;
+        foreach (var p in sproc.Parameters)
+        {
+            iter++;
+            if (sproc.Parameters.Count == iter)
+            {
+                comma = "";
+            }   
+            
+			var updatedParamName = Manager.StripAtSign(p.Name);
+            sb.Append($"{Manager.FirstToLower(updatedParamName)} : model?.{updatedParamName}{comma}");
+            sb.Append(Manager.NewLine());
+        }
+        return sb.ToString();
+    }
+#>

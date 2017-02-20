@@ -1,0 +1,146 @@
+﻿<#@ template debug="true" hostspecific="true" language="C#" 
+#><#@ assembly name="System.Core" 
+#><#@ assembly name="$(ProjectDir)..\packages\SqlMeta.1.0.5847.37675\lib\SqlMeta.dll" 
+#><#@ assembly name="$(ProjectDir)..\packages\Dapper.1.42\lib\net45\Dapper.dll" 
+#><#@ assembly name="System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" 
+#><#@ import namespace="System.Linq" 
+#><#@ import namespace="System.Text" 
+#><#@ import namespace="System.Collections.Generic" 
+#><#@include file="..\..\..\X - CodeGen\Manager.tt"
+#><# var manager = Manager.Create(Host, GenerationEnvironment); 
+#><#@ output extension=".cs"
+#><# var extention = "cs";
+#><#  
+	var databaseName = "LivingSpec";
+    var dataRepo = new MetaRepository(manager.ConnectionString);
+    var tableNames = dataRepo.GetTableNames().Where(t => !t.Contains("sysdiagram")).ToList();
+	var tables = dataRepo.GetTableInfo().Where(t => !t.TableName.Contains("sysdiagram")).ToList();
+    var sprocs = dataRepo.GetStoredProcedureInfo().Where(t => !t.Name.Contains("sysdiagram")).ToList();
+    var nameSpace = " LivingSpec.RootContracts.BehaviorContracts.DataAccess";
+    var runningSprocNames = new List<string>();
+#><#//Start the interface file for the context
+manager.StartNewFile(String.Format("I{0}Context.{1}",databaseName,extention));#>
+namespace <#=nameSpace#>
+{
+    using System;
+    using System.Collections.Generic;
+	using System.Threading.Tasks;
+	using DataContracts.Domain;
+
+	public partial interface I<#=databaseName#>Context
+	{
+<#
+foreach (var tableName in tableNames)
+{
+    var selectName = String.Format("{0}Select", tableName);
+    var selectSproc = sprocs.SingleOrDefault(s => s.Name == selectName);
+	runningSprocNames.Add(selectName);
+
+    var insertName = String.Format("{0}Insert", tableName);
+    var insertSproc = sprocs.SingleOrDefault(s => s.Name == insertName);
+	runningSprocNames.Add(insertName);
+
+    var updateName = String.Format("{0}Update",tableName);
+    var updateSproc = sprocs.SingleOrDefault(s => s.Name == updateName);
+	runningSprocNames.Add(updateName);
+
+    var deleteName = String.Format("{0}Delete", tableName);
+    var deleteSproc = sprocs.SingleOrDefault(s => s.Name == deleteName);
+	runningSprocNames.Add(deleteName);
+	
+    var findName = String.Format("{0}Find", tableName);
+    var findSproc = sprocs.SingleOrDefault(s => s.Name == findName);
+	runningSprocNames.Add(findName);
+
+    var searchName = String.Format("{0}Search", tableName);
+    var searchSproc = sprocs.SingleOrDefault(s=>s.Name == searchName);
+	runningSprocNames.Add(searchName);
+#>
+		
+		#region <#=tableName#>
+		Task<I<#=tableName#>> <#=selectName#>Async(Guid <#=Manager.FirstToLower(tableName)#>Guid);
+		I<#=tableName#> <#=selectName#>(Guid <#=Manager.FirstToLower(tableName)#>Guid);
+		Task <#=insertName#>Async(I<#=tableName#> <#=Manager.FirstToLower(tableName)#>);
+		void <#=insertName#>(I<#=tableName#> <#=Manager.FirstToLower(tableName)#>);
+		Task <#=updateName#>Async(I<#=tableName#> <#=Manager.FirstToLower(tableName)#>);
+		void <#=updateName#>(I<#=tableName#> <#=Manager.FirstToLower(tableName)#>);
+		Task <#=deleteName#>Async(Guid <#=Manager.FirstToLower(tableName)#>Guid);
+		void <#=deleteName#>(Guid <#=Manager.FirstToLower(tableName)#>Guid);
+		Task<List<I<#=tableName#>>> <#=findName#>Async(<#=BuildFindAndSearchParameters(parameters: findSproc.Parameters,sprocName:findSproc.Name)#>);
+		List<I<#=tableName#>> <#=findName#>(<#=BuildFindAndSearchParameters(parameters: findSproc.Parameters,sprocName:findSproc.Name)#>);
+		Task<List<I<#=tableName#>>> <#=searchName#>Async(<#=BuildFindAndSearchParameters(parameters:searchSproc.Parameters,sprocName:searchSproc.Name)#>);
+		List<I<#=tableName#>> <#=searchName#>(<#=BuildFindAndSearchParameters(parameters:searchSproc.Parameters,sprocName:searchSproc.Name)#>);	
+		#endregion
+
+<#	        
+}
+#>
+
+#region GeneratedNonBoilerPlateSprocs
+<#
+var nonBoilerBlateSprocs = sprocs.Where(s => runningSprocNames.All(rs => rs != s.Name)).OrderBy(s=>s.Name).ToList();
+foreach (var proc in nonBoilerBlateSprocs)
+{#>
+	Task<List<I<#=proc.Name#>>> <#=proc.Name#>Async(<#=BuildFindAndSearchParameters(parameters:proc.Parameters,sprocName:proc.Name)#>);
+	List<I<#=proc.Name#>> <#=proc.Name#>(<#=BuildFindAndSearchParameters(parameters:proc.Parameters,sprocName:proc.Name)#>);
+<#}#>
+#endregion
+	}
+}
+
+<#+
+    internal string BuildFindAndSearchParameters(List<SqlParameterInfo> parameters, string sprocName = "")
+    {
+        var sb = new StringBuilder();
+
+        var comma = String.Empty;
+        var isSearchOrFind = sprocName.Contains("Search") || sprocName.Contains("Find");
+        foreach (var p in parameters)
+        {
+            sb.Append(comma);
+            sb.Append(Manager.GetCSharpTypeFromSqlType(sqlType: p.ParameterDataType, isNullable: isSearchOrFind));
+            sb.Append(" ");
+            sb.Append(Manager.FirstToLower(Manager.StripAtSign(p.Name)));
+            if (isSearchOrFind) sb.Append(" = null");
+            comma = ",";
+        }
+
+        return sb.ToString();
+    }
+
+    internal string BuildInputParameterObject(List<SqlParameterInfo> parameters)
+    {
+        var sb = new StringBuilder();
+
+        var comma = string.Empty;
+        foreach (var p in parameters)
+        {
+            sb.Append(comma);
+			sb.Append(Manager.NewLine());
+            var strippedName = Manager.StripAtSign(p.Name);
+            var lowerName = Manager.FirstToLower(strippedName);
+            sb.Append(String.Format("{0} = {1}", strippedName, lowerName));
+            comma = ",";
+        }
+
+        return sb.ToString();
+    }
+
+	internal string BuildInputParameterObjectInsertUpdate(List<SqlParameterInfo> parameters,string inputObjectName)
+    {
+        var sb = new StringBuilder();
+
+        var comma = string.Empty;
+        foreach (var p in parameters)
+        {
+            sb.Append(comma);
+			sb.Append(Manager.NewLine());
+            var strippedName = Manager.StripAtSign(p.Name);
+            var lowerName = Manager.FirstToLower(inputObjectName);
+            sb.Append(String.Format("{0} = {1}.{0}", strippedName, lowerName));
+            comma = ",";
+        }
+
+        return sb.ToString();
+    }
+#>

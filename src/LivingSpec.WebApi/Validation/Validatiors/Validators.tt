@@ -1,0 +1,90 @@
+﻿<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="$(SolutionDir)packages\SqlMeta.1.0.5847.37675\lib\SqlMeta.dll"#>
+<#@ assembly name="$(SolutionDir)packages\Dapper.1.42\lib\net45\Dapper.dll"#>
+<#@ import namespace="SqlMeta.Data.Repositories" #>
+<#@ import namespace="SqlMeta.Data.Types" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@include file="..\..\..\X - CodeGen\Manager.tt"#>
+<# var manager = Manager.Create(Host, GenerationEnvironment); #>
+<#@ output extension="/" #>
+<#var extention = "cs";#>
+
+<# 
+    var dataRepo = new MetaRepository(manager.ConnectionString);
+    var tables = dataRepo.GetTableInfo().Where(t=>!t.TableName.Contains("diagram")).ToList();
+    var nameSpace = "LivingSpec.WebApi.Validation.Validatiors";
+
+foreach (var table in tables)
+{
+    var className = $"{table.TableName}Validator";
+    manager.StartNewFile($"{className}.{extention}");
+#>
+namespace <#=nameSpace#>
+{
+    using FluentValidation;
+    using RootContracts.DataContracts.Domain;
+
+	public partial class <#=className#> : AbstractValidator<I<#=table.TableName#>>
+	{
+		public <#=className#>()
+		{
+<# foreach (SqlMeta.Data.Types.SqlColumnInfo column in table.Columns)
+{#>
+			RuleFor(obj=>obj.<#=column.ColumnName#>)<#=this.GetRulesForColumn(column)#>;
+<#}#>
+		}
+	}		
+}
+<#
+}
+#>
+
+<# manager.EndBlock(); #>
+<# manager.Process(true); #>
+
+<#+
+    internal string GetRulesForColumn(SqlColumnInfo column)
+    {
+		var sb = new StringBuilder();
+		
+        sb.Append(this.GetNotEmptyValidator(column));
+        sb.Append(this.GetLengthValidator(column));
+
+        return sb.ToString();
+    }
+
+    internal string GetNotEmptyValidator(SqlColumnInfo column)
+    {
+        var result = string.Empty;
+        //var csType = Manager.GetCSharpTypeFromSqlType(column.DataType, column.IsNullable);
+        if (column.IsNullable == false)
+        {
+            result = ".NotEmpty()";
+        }
+
+        return result;
+    }
+
+    internal string GetLengthValidator(SqlColumnInfo column)
+    {
+        var result = string.Empty;
+		var csType = Manager.GetCSharpTypeFromSqlType(column.DataType, column.IsNullable);
+        var min = column.IsNullable ? "0" : "1";
+        
+        if (csType == "string")
+        {
+            result = $".Length(min:{min},max:{column.CharacterMaxLength})";
+            
+        }
+
+		if (column.IsNullable && !String.IsNullOrWhiteSpace(result))
+        {
+            var whenNotNull = $".When(obj => obj.{column.ColumnName} != null)";
+            result += whenNotNull;
+        }
+        return result;
+    }
+#>
