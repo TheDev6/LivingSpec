@@ -57,7 +57,7 @@ namespace <#=nameSpace#>
 		}
 
 		[HttpPut]
-        [Route("api/v1/ArtifactWorkItem")]
+        [Route("api/v1/<#=table.TableName#>")]
         [ResponseType(typeof(IApiResponse<object>))]
         [ValidateModelState]
         public async Task<HttpResponseMessage> Update(<#=table.TableName#>UpdateModel model)

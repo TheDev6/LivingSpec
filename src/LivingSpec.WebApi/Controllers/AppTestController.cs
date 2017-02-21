@@ -33,7 +33,7 @@ namespace LivingSpec.WebApi.Controllers
 		}
 
 		[HttpPut]
-        [Route("api/v1/ArtifactWorkItem")]
+        [Route("api/v1/AppTest")]
         [ResponseType(typeof(IApiResponse<object>))]
         [ValidateModelState]
         public async Task<HttpResponseMessage> Update(AppTestUpdateModel model)

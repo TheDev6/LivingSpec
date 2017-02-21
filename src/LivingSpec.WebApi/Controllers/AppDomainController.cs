@@ -33,7 +33,7 @@ namespace LivingSpec.WebApi.Controllers
 		}
 
 		[HttpPut]
-        [Route("api/v1/ArtifactWorkItem")]
+        [Route("api/v1/AppDomain")]
         [ResponseType(typeof(IApiResponse<object>))]
         [ValidateModelState]
         public async Task<HttpResponseMessage> Update(AppDomainUpdateModel model)
